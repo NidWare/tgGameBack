@@ -64,7 +64,7 @@ def get_link(user_id: int):
     conn.close()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return {"link": f"http://example.com/register?ref={user['code']}"}
+    return {"link": f"https://t.me/FHN_Telega_testWeb_bot/start?startapp={user['code']}"}
 
 @app.get("/api/referralCount")
 def get_referral_count(user_id: int):
