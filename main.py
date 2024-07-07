@@ -24,7 +24,7 @@ class Register(BaseModel):
     referral_code: str = ""
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(DATABASE, timeout=15)
     conn.row_factory = sqlite3.Row
     return conn
 
