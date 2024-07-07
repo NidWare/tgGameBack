@@ -1,17 +1,14 @@
 #!/bin/bash
 
-IMAGE_NAME="fastapi-app"
 DB_PATH="$(pwd)/data"
 
 function start() {
     mkdir -p $DB_PATH
-    docker build -t $IMAGE_NAME .
-    docker run -d --name $IMAGE_NAME -p 80:80 -v $DB_PATH:/data $IMAGE_NAME
+    docker-compose up -d
 }
 
 function stop() {
-    docker stop $IMAGE_NAME
-    docker rm $IMAGE_NAME
+    docker-compose down
 }
 
 case "$1" in
