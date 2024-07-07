@@ -46,7 +46,7 @@ def execute_with_retry(func, *args, **kwargs):
                 time.sleep(retry_delay)
             else:
                 raise
-    raise HTTPException(status_code=500, detail=f"Database error after retries: {last_exception}")
+    raise HTTPException(status_code=510, detail=f"Database error after retries: {last_exception}")
 
 @app.on_event("startup")
 def startup():
