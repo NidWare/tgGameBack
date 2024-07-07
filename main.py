@@ -115,3 +115,7 @@ def register_user(register: Register):
             raise HTTPException(status_code=500, detail=f"Database error: {e}")
         finally:
             conn.close()
+
+@app.options("/api/{path:path}")
+async def options_handler(path: str):
+    return {"status": "ok"}
