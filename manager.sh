@@ -1,9 +1,6 @@
 #!/bin/bash
 
-DB_PATH="$(pwd)/data"
-
 function start() {
-    mkdir -p $DB_PATH
     docker-compose up -d
 }
 
