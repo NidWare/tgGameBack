@@ -8,6 +8,10 @@ function stop() {
     docker-compose down
 }
 
+function build() {
+    docker-compose up -d --build
+}
+
 case "$1" in
     start)
         start
