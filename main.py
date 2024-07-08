@@ -76,7 +76,7 @@ def get_points(user_id: int):
     with db_lock:
         result = execute_with_retry("SELECT points FROM users WHERE user_id = %s", (user_id,))
         if not result:
-            raise HTTPException(status_code=404, detail="User not found")
+            return {"points": 0}
         return {"points": result[0]["points"]}
 
 @app.post("/api/points/set")
