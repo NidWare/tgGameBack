@@ -19,6 +19,9 @@ case "$1" in
     stop)
         stop
         ;;
+    build)
+        build
+        ;;
     *)
         echo "Usage: $0 {start|stop}"
         exit 1
