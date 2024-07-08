@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import psycopg2
-from psycopg2 import sql
 import os
 import threading
 import time
@@ -38,21 +37,22 @@ def execute_with_retry(query, params=(), commit=False):
     retry_delay = 2
     last_exception = None
     conn = get_db_connection()
-
-    for _ in range(max_retries):
-        try:
-            with conn:
+    try:
+        for _ in range(max_retries):
+            try:
                 with conn.cursor(cursor_factory=RealDictCursor) as cursor:
                     cursor.execute(query, params)
                     if commit:
                         conn.commit()
-                    return cursor
-        except psycopg2.OperationalError as e:
-            last_exception = e
-            time.sleep(retry_delay)
-        except psycopg2.Error as e:
-            raise HTTPException(status_code=500, detail=f"Database error: {e}")
-    raise HTTPException(status_code=500, detail=f"Database error after retries: {last_exception}")
+                    return cursor.fetchall() if not commit else None
+            except psycopg2.OperationalError as e:
+                last_exception = e
+                time.sleep(retry_delay)
+            except psycopg2.Error as e:
+                raise HTTPException(status_code=500, detail=f"Database error: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error after retries: {last_exception}")
+    finally:
+        conn.close()
 
 @app.on_event("startup")
 def startup():
@@ -74,11 +74,10 @@ def startup():
 @app.get("/api/points")
 def get_points(user_id: int):
     with db_lock:
-        cursor = execute_with_retry("SELECT points FROM users WHERE user_id = %s", (user_id,))
-        user = cursor.fetchone()
-        if user is None:
+        result = execute_with_retry("SELECT points FROM users WHERE user_id = %s", (user_id,))
+        if not result:
             raise HTTPException(status_code=404, detail="User not found")
-        return {"points": user["points"]}
+        return {"points": result[0]["points"]}
 
 @app.post("/api/points/set")
 def set_points(points: Points):
@@ -89,18 +88,16 @@ def set_points(points: Points):
 @app.get("/api/link")
 def get_link(user_id: int):
     with db_lock:
-        cursor = execute_with_retry("SELECT code FROM users WHERE user_id = %s", (user_id,))
-        user = cursor.fetchone()
-        if user is None:
+        result = execute_with_retry("SELECT code FROM users WHERE user_id = %s", (user_id,))
+        if not result:
             raise HTTPException(status_code=404, detail="User not found")
-        return {"link": f"https://t.me/FHN_Telega_testWeb_bot/start?startapp={user['code']}"}
+        return {"link": f"https://t.me/FHN_Telega_testWeb_bot/start?startapp={result[0]['code']}"}
 
 @app.get("/api/referralCount")
 def get_referral_count(user_id: int):
     with db_lock:
-        cursor = execute_with_retry("SELECT COUNT(*) as count FROM referrals WHERE referral_id = %s", (user_id,))
-        count = cursor.fetchone()
-        return {"referral_count": count["count"]}
+        result = execute_with_retry("SELECT COUNT(*) as count FROM referrals WHERE referral_id = %s", (user_id,))
+        return {"referral_count": result[0]["count"]}
 
 @app.post("/api/register")
 def register_user(register: Register):
@@ -109,9 +106,9 @@ def register_user(register: Register):
         try:
             execute_with_retry("INSERT INTO users (user_id, points, code) VALUES (%s, 0, %s)", (register.user_id, code), commit=True)
             if register.referral_code:
-                cursor = execute_with_retry("SELECT user_id FROM users WHERE code = %s", (register.referral_code,))
-                referral_user = cursor.fetchone()
-                if referral_user:
+                result = execute_with_retry("SELECT user_id FROM users WHERE code = %s", (register.referral_code,))
+                if result:
+                    referral_user = result[0]
                     execute_with_retry("INSERT INTO referrals (user_id, referral_id) VALUES (%s, %s)", (register.user_id, referral_user["user_id"]), commit=True)
             return {"status": "success"}
         except psycopg2.IntegrityError as e:
