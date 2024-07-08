@@ -125,11 +125,13 @@ def register_user(register: Register):
         conn = get_db_connection()
         try:
             code = f"ref{register.user_id}"
-            execute_with_retry(conn, "INSERT INTO users (user_id, points, code) VALUES (%s, 0, %s)", (register.user_id, code), commit=True)
-            if register.referral_code:
-                referral_user = execute_with_retry(conn, "SELECT user_id FROM users WHERE code = %s", (register.referral_code,)).fetchone()
-                if referral_user:
-                    execute_with_retry(conn, "INSERT INTO referrals (user_id, referral_id) VALUES (%s, %s)", (register.user_id, referral_user["user_id"]), commit=True)
+            with conn.cursor() as cursor:
+                execute_with_retry(conn, "INSERT INTO users (user_id, points, code) VALUES (%s, 0, %s)", (register.user_id, code), commit=True)
+                if register.referral_code:
+                    cursor.execute("SELECT user_id FROM users WHERE code = %s", (register.referral_code,))
+                    referral_user = cursor.fetchone()
+                    if referral_user:
+                        execute_with_retry(conn, "INSERT INTO referrals (user_id, referral_id) VALUES (%s, %s)", (register.user_id, referral_user["user_id"]), commit=True)
             return {"status": "success"}
         except psycopg2.IntegrityError as e:
             raise HTTPException(status_code=400, detail=f"User already exists: {e}")
@@ -137,6 +139,7 @@ def register_user(register: Register):
             raise HTTPException(status_code=500, detail=f"Database error: {e}")
         finally:
             conn.close()
+
 
 @app.options("/api/{path:path}")
 async def options_handler(path: str):
