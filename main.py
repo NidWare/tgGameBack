@@ -110,6 +110,8 @@ def register_user(register: Register):
                 if result:
                     referral_user = result[0]
                     execute_with_retry("INSERT INTO referrals (user_id, referral_id) VALUES (%s, %s)", (register.user_id, referral_user["user_id"]), commit=True)
+                    # Add 200 points to the user who invited the newcomer
+                    execute_with_retry("UPDATE users SET points = points + 200 WHERE user_id = %s", (referral_user["user_id"],), commit=True)
             return {"status": "success"}
         except psycopg2.IntegrityError as e:
             raise HTTPException(status_code=400, detail=f"User already exists: {e}")
