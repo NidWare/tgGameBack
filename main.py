@@ -63,7 +63,8 @@ def startup():
             CREATE TABLE IF NOT EXISTS users (
                 user_id SERIAL PRIMARY KEY,
                 points INTEGER DEFAULT 0,
-                code TEXT
+                code TEXT,
+                bonus_points INTEGER DEFAULT 0
             )
         ''', commit=True)
         execute_with_retry('''
@@ -97,7 +98,7 @@ def add_points(points: Points):
         if referrer:
             referrer_id = referrer[0]['referral_id']
             bonus_points = math.ceil(points.points * 0.1)
-            execute_with_retry("UPDATE users SET points = points + %s WHERE user_id = %s", (bonus_points, referrer_id), commit=True)
+            execute_with_retry("UPDATE users SET points = points + %s, bonus_points = bonus_points + %s WHERE user_id = %s", (bonus_points, bonus_points, referrer_id), commit=True)
 
         return {"status": "success"}
 
@@ -114,6 +115,14 @@ def get_referral_count(user_id: int):
     with db_lock:
         result = execute_with_retry("SELECT COUNT(*) as count FROM referrals WHERE referral_id = %s", (user_id,))
         return {"referral_count": result[0]["count"]}
+
+@app.get("/api/bonusPoints")
+def get_bonus_points(user_id: int):
+    with db_lock:
+        result = execute_with_retry("SELECT bonus_points FROM users WHERE user_id = %s", (user_id,))
+        if not result:
+            raise HTTPException(status_code=404, detail="User not found")
+        return {"bonus_points": result[0]["bonus_points"]}
 
 @app.post("/api/register")
 def register_user(register: Register):
