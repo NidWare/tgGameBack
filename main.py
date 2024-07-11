@@ -6,7 +6,7 @@ import os
 import threading
 import time
 from psycopg2.extras import RealDictCursor
-import math  # Ensure the math module is imported
+import math
 
 
 app = FastAPI()
