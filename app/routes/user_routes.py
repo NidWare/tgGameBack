@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ..models import Points, Register
+from app.models import Points, Register
 from .. import crud
 from ..database import get_db
 

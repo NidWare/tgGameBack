@@ -1,5 +1,5 @@
 import math
-from database import execute_with_retry
+from app.database import execute_with_retry
 
 def get_points(user_id: int):
     result = execute_with_retry("SELECT points FROM users WHERE user_id = %s", (user_id,))

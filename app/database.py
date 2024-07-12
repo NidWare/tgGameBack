@@ -8,7 +8,7 @@ from fastapi import HTTPException
 DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://postgres:password@db:5432/mydatabase')
 db_lock = threading.Lock()
 
-def get_db_connection():
+def get_db():
     conn = psycopg2.connect(DATABASE_URL)
     return conn
 
@@ -16,7 +16,7 @@ def execute_with_retry(query, params=(), commit=False):
     max_retries = 10
     retry_delay = 2
     last_exception = None
-    conn = get_db_connection()
+    conn = get_db()
     try:
         for _ in range(max_retries):
             try:
