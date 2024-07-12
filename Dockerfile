@@ -1,7 +1,7 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
 
-COPY ./main.py /app/main.py
-COPY ./requirements.txt /app/requirements.txt
+COPY ./app/main.py /app/main.py
+COPY ./app/requirements.txt /app/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
