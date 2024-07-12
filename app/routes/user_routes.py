@@ -8,23 +8,23 @@ router = APIRouter()
 
 @router.get("/api/points")
 def get_points(user_id: int, db: Session = Depends(get_db)):
-    return crud.get_points(db, user_id)
+    return crud.get_points(user_id)
 
 @router.post("/api/points/set")
 def set_points(points: Points, db: Session = Depends(get_db)):
-    return crud.set_points(db, points)
+    return crud.set_points(points)
 
 @router.post("/api/points/add")
 def add_points(points: Points, db: Session = Depends(get_db)):
-    return crud.add_points(db, points)
+    return crud.add_points(points)
 
 @router.get("/api/link")
 def get_link(user_id: int, db: Session = Depends(get_db)):
-    return crud.get_link(db, user_id)
+    return crud.get_link(user_id)
 
 @router.get("/api/referralCount")
 def get_referral_count(user_id: int, db: Session = Depends(get_db)):
-    return crud.get_referral_count(db, user_id)
+    return crud.get_referral_count(user_id)
 
 @router.get("/api/bonusPoints")
 def get_bonus_points(user_id: int, db: Session = Depends(get_db)):
@@ -32,7 +32,7 @@ def get_bonus_points(user_id: int, db: Session = Depends(get_db)):
 
 @router.post("/api/register")
 def register_user(register: Register, db: Session = Depends(get_db)):
-    return crud.register_user(db, register)
+    return crud.register_user(register)
 
 @router.options("/api/{path:path}")
 async def options_handler(path: str):
