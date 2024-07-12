@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import user_routes
-from database import create_tables
+from .routes import user_routes  # Use relative import
+from .database import create_tables
 
 app = FastAPI()
 
