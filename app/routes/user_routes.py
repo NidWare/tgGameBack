@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.models import Points, Register
-from .. import crud
-from ..database import get_db
+import app.crud as crud
+from app.database import get_db
 
 router = APIRouter()
 
@@ -28,7 +28,7 @@ def get_referral_count(user_id: int, db: Session = Depends(get_db)):
 
 @router.get("/api/bonusPoints")
 def get_bonus_points(user_id: int, db: Session = Depends(get_db)):
-    return crud.get_bonus_points(db, user_id)
+    return crud.get_bonus_points(user_id)
 
 @router.post("/api/register")
 def register_user(register: Register, db: Session = Depends(get_db)):
